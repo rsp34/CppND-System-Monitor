@@ -118,7 +118,7 @@ long LinuxParser::ActiveJiffies(int pid) {
   if (filestream.is_open()) {
     std::getline(filestream, line);
     std::istringstream linestream(line);
-    for(int i = 0; i <= 21; i++) {
+    for (int i = 0; i <= 21; i++) {
       linestream >> active_jiffies;
     };
     return LinuxParser::Jiffies() - std::stol(active_jiffies);
@@ -127,7 +127,22 @@ long LinuxParser::ActiveJiffies(int pid) {
 }
 
 // TODO: Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { return 0; }
+long LinuxParser::ActiveJiffies() {
+  long active_jiffies = 0;
+  string line;
+  string jiffy;
+  std::ifstream filestream(kProcDirectory + kStatFilename);
+  if (filestream.is_open()) {
+    std::getline(filestream, line);
+    std::istringstream linestream(line);
+    linestream >> jiffy;
+    while (linestream >> jiffy) {
+      active_jiffies += std::stol(jiffy);
+    }
+    return active_jiffies;
+  }
+  return 0;
+}
 
 // TODO: Read and return the number of idle jiffies for the system
 long LinuxParser::IdleJiffies() { return 0; }
