@@ -130,16 +130,13 @@ long LinuxParser::ActiveJiffies(int pid) {
 long LinuxParser::ActiveJiffies() {
   long active_jiffies = 0;
   string line;
-  string jiffy;
+  string cpu, user, nice, system, idle, iowait, irq, softirq, steal;
   std::ifstream filestream(kProcDirectory + kStatFilename);
   if (filestream.is_open()) {
     std::getline(filestream, line);
     std::istringstream linestream(line);
-    linestream >> jiffy;
-    while (linestream >> jiffy) {
-      active_jiffies += std::stol(jiffy);
-    }
-    return active_jiffies;
+    linestream >> cpu >> user >> nice >> system >> idle >> iowait >> irq >> softirq >> steal;
+    return std::stol(user) + std::stol(nice) + std::stol(system) + std::stol(irq) + std::stol(softirq) + std::stol(steal);
   }
   return 0;
 }
@@ -159,7 +156,18 @@ long LinuxParser::IdleJiffies() {
 }
 
 // TODO: Read and return CPU utilization
-vector<string> LinuxParser::CpuUtilization() { return {}; }
+vector<string> LinuxParser::CpuUtilization() {
+  string line;
+  string cpu, user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
+  std::ifstream filestream(kProcDirectory + kStatFilename);
+  if (filestream.is_open()) {
+    std::getline(filestream, line);
+    std::istringstream linestream(line);
+    linestream >> cpu >> user >> nice >> system >> idle >> iowait >> irq >> softirq >> steal >> guest >> guest_nice;
+    return {user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice};
+  }
+  return {};  
+}
 
 // TODO: Read and return the total number of processes
 int LinuxParser::TotalProcesses() { return 0; }
