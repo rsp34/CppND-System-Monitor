@@ -19,8 +19,12 @@ float Processor::Utilization() {
   long total = idle + active;
 
   long total_d = total - prev_total;
-  long idle_d = idle - prev_idle;
-
-  return 100*((total_d-idle_d)/total_d);
   
+  if(total_d == 0){
+      return 0.0;
   }
+  else{
+    long idle_d = idle - prev_idle;
+    return 100*(static_cast<double>(total_d-idle_d)/total_d);
+  }
+}
