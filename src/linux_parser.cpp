@@ -175,8 +175,7 @@ int LinuxParser::TotalProcesses() {
   std::ifstream filestream(kProcDirectory + kStatFilename);
 
   if (filestream.is_open()) {
-    while(key != "processes"){
-      std::getline(filestream, line);
+    while(std::getline(filestream, line) && key != "processes"){
       std::istringstream linestream(line);
       linestream >> key >> value;
     };
@@ -191,8 +190,7 @@ int LinuxParser::RunningProcesses() {
   std::ifstream filestream(kProcDirectory + kStatFilename);
 
   if (filestream.is_open()) {
-    while(key != "procs_running"){
-      std::getline(filestream, line);
+    while(std::getline(filestream, line) && key != "procs_running"){
       std::istringstream linestream(line);
       linestream >> key >> value;
     };
@@ -204,15 +202,45 @@ int LinuxParser::RunningProcesses() {
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Command(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::Command(int pid) { 
+  string line;
+  std::ifstream filestream(kProcDirectory + '/' + to_string(pid) + kCmdlineFilename);
+  if (filestream.is_open()) {
+    std::getline(filestream, line);
+    return line;
+  }
+  return string();
+}
 
 // TODO: Read and return the memory used by a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Ram(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::Ram(int pid) { 
+  string line, key, value;
+  std::ifstream filestream(kProcDirectory + '/' + to_string(pid) + kStatusFilename);
+  if (filestream.is_open()) {
+    while(std::getline(filestream, line) && key != "VmSize:"){
+      std::istringstream linestream(line);
+      linestream >> key >> value;
+    };
+    return value;
+  }
+  return string();
+}
 
 // TODO: Read and return the user ID associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Uid(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::Uid(int pid) {
+  string line, key, value;
+  std::ifstream filestream(kProcDirectory + '/' + to_string(pid) + kStatusFilename);
+  if (filestream.is_open()) {
+    while(std::getline(filestream, line) && key != "Uid:"){
+      std::istringstream linestream(line);
+      linestream >> key >> value;
+    };
+    return value;
+  }
+  return string();
+}
 
 // TODO: Read and return the user associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
