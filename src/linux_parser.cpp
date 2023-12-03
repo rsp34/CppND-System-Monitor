@@ -105,12 +105,16 @@ long LinuxParser::UpTime() {
 
 // TODO: Read and return the number of jiffies for the system
 long LinuxParser::Jiffies() {
+  // TODO: Could use CpuUtilization here
+  // TODO: Try System Active jiffies + System IdleJiffies
   return LinuxParser::UpTime() * sysconf(_SC_CLK_TCK);
 }
 
 // TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::ActiveJiffies(int pid) {
+  // TODO check when compared to ActiveJiffies()
+  // https://knowledge.udacity.com/questions/129844
   string line;
   string active_jiffies;
   std::ifstream filestream(kProcDirectory + '/' + to_string(pid) +
@@ -121,13 +125,14 @@ long LinuxParser::ActiveJiffies(int pid) {
     for (int i = 0; i <= 21; i++) {
       linestream >> active_jiffies;
     };
-    return LinuxParser::Jiffies() - std::stol(active_jiffies);
+    return std::stol(active_jiffies);
   };
   return 0;
 }
 
 // TODO: Read and return the number of active jiffies for the system
 long LinuxParser::ActiveJiffies() {
+  // Could use CpuUtilization here
   long active_jiffies = 0;
   string line;
   string cpu, user, nice, system, idle, iowait, irq, softirq, steal;
