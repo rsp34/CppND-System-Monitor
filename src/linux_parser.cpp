@@ -288,11 +288,12 @@ long LinuxParser::UpTime(int pid_) {
 }
 
 float LinuxParser::ProcessUtilization(int pid) {
+
+  //Doesn't work as prevUserTime is shared across processes.
   static float prevUserTime = 0;
   static float prevKernelTime = 0;
   static float prevWfcUserTime = 0;
   static float prevWfcKernelTime = 0;
-  static float prevStartTime = 0;
 
   float userTime;
   float kernelTime;
@@ -302,7 +303,7 @@ float LinuxParser::ProcessUtilization(int pid) {
 
   float totalTime;
 
-  float elapsedTime;
+  float elapsedTime = 1.0; // Set as display refresh rate
 
   string line, key, value;
   std::ifstream filestream(kProcDirectory + '/' + to_string(pid) +
@@ -331,14 +332,11 @@ float LinuxParser::ProcessUtilization(int pid) {
                  (wfcUserTime - prevWfcUserTime) +
                  (wfcKernelTime - prevWfcKernelTime)) /
                 sysconf(_SC_CLK_TCK);
-    elapsedTime = LinuxParser::UpTime() -
-                  ((startTime - prevStartTime) / sysconf(_SC_CLK_TCK));
 
     prevUserTime = userTime;
     prevKernelTime = kernelTime;
     prevWfcUserTime = wfcUserTime;
     prevWfcKernelTime = wfcKernelTime;
-    prevStartTime = startTime;
   }
   return (totalTime / elapsedTime);
 }
