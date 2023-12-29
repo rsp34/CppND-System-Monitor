@@ -104,7 +104,8 @@ long LinuxParser::UpTime() {
 }
 
 // TODO: Read and return the number of jiffies for the system
-// TODO: Use System Active jiffies + System IdleJiffies which take values from CpuUtilization
+// TODO: Use System Active jiffies + System IdleJiffies which take values from
+// CpuUtilization
 long LinuxParser::Jiffies() {
   return LinuxParser::UpTime() * sysconf(_SC_CLK_TCK);
 }
@@ -139,14 +140,16 @@ long LinuxParser::ActiveJiffies() {
   if (filestream.is_open()) {
     std::getline(filestream, line);
     std::istringstream linestream(line);
-    linestream >> cpu >> user >> nice >> system >> idle >> iowait >> irq >> softirq >> steal;
-    return std::stol(user) + std::stol(nice) + std::stol(system) + std::stol(irq) + std::stol(softirq) + std::stol(steal);
+    linestream >> cpu >> user >> nice >> system >> idle >> iowait >> irq >>
+        softirq >> steal;
+    return std::stol(user) + std::stol(nice) + std::stol(system) +
+           std::stol(irq) + std::stol(softirq) + std::stol(steal);
   }
   return 0;
 }
 
 // TODO: Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() { 
+long LinuxParser::IdleJiffies() {
   string line;
   string cpu, user, nice, system, idle, iowait;
   std::ifstream filestream(kProcDirectory + kStatFilename);
@@ -162,15 +165,18 @@ long LinuxParser::IdleJiffies() {
 // TODO: Read and return CPU utilization
 vector<string> LinuxParser::CpuUtilization() {
   string line;
-  string cpu, user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
+  string cpu, user, nice, system, idle, iowait, irq, softirq, steal, guest,
+      guest_nice;
   std::ifstream filestream(kProcDirectory + kStatFilename);
   if (filestream.is_open()) {
     std::getline(filestream, line);
     std::istringstream linestream(line);
-    linestream >> cpu >> user >> nice >> system >> idle >> iowait >> irq >> softirq >> steal >> guest >> guest_nice;
-    return {user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice};
+    linestream >> cpu >> user >> nice >> system >> idle >> iowait >> irq >>
+        softirq >> steal >> guest >> guest_nice;
+    return {user, nice,    system, idle,  iowait,
+            irq,  softirq, steal,  guest, guest_nice};
   }
-  return {};  
+  return {};
 }
 
 // TODO: Read and return the total number of processes
@@ -179,7 +185,7 @@ int LinuxParser::TotalProcesses() {
   std::ifstream filestream(kProcDirectory + kStatFilename);
 
   if (filestream.is_open()) {
-    while(std::getline(filestream, line) && key != "processes"){
+    while (std::getline(filestream, line) && key != "processes") {
       std::istringstream linestream(line);
       linestream >> key >> value;
     };
@@ -193,7 +199,7 @@ int LinuxParser::RunningProcesses() {
   string line, key, value;
   std::ifstream filestream(kProcDirectory + kStatFilename);
   if (filestream.is_open()) {
-    while(std::getline(filestream, line) && key != "procs_running"){
+    while (std::getline(filestream, line) && key != "procs_running") {
       std::istringstream linestream(line);
       linestream >> key >> value;
     };
@@ -204,9 +210,10 @@ int LinuxParser::RunningProcesses() {
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Command(int pid) { 
+string LinuxParser::Command(int pid) {
   string line;
-  std::ifstream filestream(kProcDirectory + '/' + to_string(pid) + kCmdlineFilename);
+  std::ifstream filestream(kProcDirectory + '/' + to_string(pid) +
+                           kCmdlineFilename);
   if (filestream.is_open()) {
     std::getline(filestream, line);
     return line;
@@ -216,11 +223,12 @@ string LinuxParser::Command(int pid) {
 
 // TODO: Read and return the memory used by a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Ram(int pid) { 
+string LinuxParser::Ram(int pid) {
   string line, key, value;
-  std::ifstream filestream(kProcDirectory + '/' + to_string(pid) + kStatusFilename);
+  std::ifstream filestream(kProcDirectory + '/' + to_string(pid) +
+                           kStatusFilename);
   if (filestream.is_open()) {
-    while(std::getline(filestream, line) && key != "VmSize:"){
+    while (std::getline(filestream, line) && key != "VmSize:") {
       std::istringstream linestream(line);
       linestream >> key >> value;
     };
@@ -233,9 +241,10 @@ string LinuxParser::Ram(int pid) {
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Uid(int pid) {
   string line, key, value;
-  std::ifstream filestream(kProcDirectory + '/' + to_string(pid) + kStatusFilename);
+  std::ifstream filestream(kProcDirectory + '/' + to_string(pid) +
+                           kStatusFilename);
   if (filestream.is_open()) {
-    while(std::getline(filestream, line) && key != "Uid:"){
+    while (std::getline(filestream, line) && key != "Uid:") {
       std::istringstream linestream(line);
       linestream >> key >> value;
     };
@@ -246,15 +255,17 @@ string LinuxParser::Uid(int pid) {
 
 // TODO: Read and return the user associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::User(int pid) { 
+string LinuxParser::User(int pid) {
   string line, username, password, uid;
   std::ifstream filestream(kPasswordPath);
-  if (filestream.is_open()){
-    while(std::getline(filestream, line)){
+  if (filestream.is_open()) {
+    while (std::getline(filestream, line)) {
       std::replace(line.begin(), line.end(), ':', ' ');
       std::istringstream linestream(line);
       linestream >> username >> password >> uid;
-      if(uid == Uid(pid)){return username;};
+      if (uid == Uid(pid)) {
+        return username;
+      };
     };
   }
   return string();
@@ -263,19 +274,21 @@ string LinuxParser::User(int pid) {
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::UpTime(int pid) {
-  string line, pid, comm, state, ppid, pgrp, session, tty_nr, tpgid, flags, minflt, cminflt, majflt, cmajflt, utime;
-  std::ifstream filestream(kProcDirectory + '/' + to_string(pid) + kStatFilename);
-  if(filestream.is_open()){
-    std::getline(filestream,line);
+  string line, pid, comm, state, ppid, pgrp, session, tty_nr, tpgid, flags,
+      minflt, cminflt, majflt, cmajflt, utime;
+  std::ifstream filestream(kProcDirectory + '/' + to_string(pid) +
+                           kStatFilename);
+  if (filestream.is_open()) {
+    std::getline(filestream, line);
     std::istringstream linestream(line);
-    linestream >> pid >> comm >> state >> ppid >> pgrp >> session >> tty_nr >> tpgid >> flags >> minflt >> cminflt >> majflt >> cmajflt >> utime;
-    return std::stol(utime)/sysconf(_SC_CLK_TCK);
+    linestream >> pid >> comm >> state >> ppid >> pgrp >> session >> tty_nr >>
+        tpgid >> flags >> minflt >> cminflt >> majflt >> cmajflt >> utime;
+    return std::stol(utime) / sysconf(_SC_CLK_TCK);
   }
   return 0;
 }
 
-float LinuxParser::ProcessUtilization(int pid){
-
+float LinuxParser::ProcessUtilization(int pid) {
   static float prevUserTime = 0;
   static float prevKernelTime = 0;
   static float prevWfcUserTime = 0;
@@ -287,39 +300,41 @@ float LinuxParser::ProcessUtilization(int pid){
   float wfcUserTime;
   float wfcKernelTime;
   float startTime;
-	
+
   float totalTime;
-	
+
   float elapsedTime;
-	
-  string line, key,  value;
-  std::ifstream filestream(kProcDirectory + '/' + to_string(pid) + kStatFilename);
-	
-  if(filestream.is_open()) 
-  {
-    while(std::getline(filestream, line)) 
-    {	
+
+  string line, key, value;
+  std::ifstream filestream(kProcDirectory + '/' + to_string(pid) +
+                           kStatFilename);
+
+  if (filestream.is_open()) {
+    while (std::getline(filestream, line)) {
       std::istringstream linestream(line);
-			
-      for (int i = 0; i < 25; i++)
-      {
+
+      for (int i = 0; i < 25; i++) {
         linestream >> value;
-        if(i == 13)
+        if (i == 13)
           userTime = stof(value);
         else if (i == 14)
           kernelTime = stof(value);
         else if (i == 15)
           wfcUserTime = stof(value);
         else if (i == 16)
-	  wfcKernelTime = stof(value);
+          wfcKernelTime = stof(value);
         else if (i == 21)
           startTime = stof(value);
-       }
+      }
     }
-    
-    totalTime = ((userTime - prevUserTime) + (kernelTime - prevKernelTime) + (wfcUserTime - prevWfcUserTime) + (wfcKernelTime - prevWfcKernelTime))/sysconf(_SC_CLK_TCK);
-    elapsedTime = LinuxParser::UpTime() - ((startTime - prevStartTime) / sysconf(_SC_CLK_TCK));  
-    
+
+    totalTime = ((userTime - prevUserTime) + (kernelTime - prevKernelTime) +
+                 (wfcUserTime - prevWfcUserTime) +
+                 (wfcKernelTime - prevWfcKernelTime)) /
+                sysconf(_SC_CLK_TCK);
+    elapsedTime = LinuxParser::UpTime() -
+                  ((startTime - prevStartTime) / sysconf(_SC_CLK_TCK));
+
     prevUserTime = userTime;
     prevKernelTime = kernelTime;
     prevWfcUserTime = wfcUserTime;
