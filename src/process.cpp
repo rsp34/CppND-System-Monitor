@@ -39,3 +39,4 @@ bool Process::operator<(Process const& a) const {
     return true;
   }
   return false;
+}

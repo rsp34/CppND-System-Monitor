@@ -133,7 +133,6 @@ long LinuxParser::ActiveJiffies(int pid) {
 // TODO: Read and return the number of active jiffies for the system
 long LinuxParser::ActiveJiffies() {
   // Could use CpuUtilization here
-  long active_jiffies = 0;
   string line;
   string cpu, user, nice, system, idle, iowait, irq, softirq, steal;
   std::ifstream filestream(kProcDirectory + kStatFilename);
@@ -273,10 +272,10 @@ string LinuxParser::User(int pid) {
 
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::UpTime(int pid) {
+long LinuxParser::UpTime(int pid_) {
   string line, pid, comm, state, ppid, pgrp, session, tty_nr, tpgid, flags,
       minflt, cminflt, majflt, cmajflt, utime;
-  std::ifstream filestream(kProcDirectory + '/' + to_string(pid) +
+  std::ifstream filestream(kProcDirectory + '/' + to_string(pid_) +
                            kStatFilename);
   if (filestream.is_open()) {
     std::getline(filestream, line);
