@@ -83,7 +83,7 @@ float LinuxParser::MemoryUtilization() {
     std::istringstream linestream2(line);
     linestream2 >> key >> mem_free;
 
-    return 100 * (std::stof(mem_total) - std::stof(mem_free)) /
+    return (std::stof(mem_total) - std::stof(mem_free)) /
            std::stof(mem_total);
   }
   return 0;
