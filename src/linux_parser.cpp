@@ -47,7 +47,7 @@ string LinuxParser::Kernel() {
   return kernel;
 }
 
-// BONUS: Update this to use std::filesystem
+// TODO: Update this to use std::filesystem
 vector<int> LinuxParser::Pids() {
   vector<int> pids;
   DIR* directory = opendir(kProcDirectory.c_str());
@@ -67,7 +67,7 @@ vector<int> LinuxParser::Pids() {
   return pids;
 }
 
-// TODO: Read and return the system memory utilization
+// DONE: Read and return the system memory utilization
 float LinuxParser::MemoryUtilization() {
   string line;
   string key;
@@ -89,7 +89,7 @@ float LinuxParser::MemoryUtilization() {
   return 0;
 }
 
-// TODO: Read and return the system uptime
+// DONE: Read and return the system uptime
 long LinuxParser::UpTime() {
   std::string line;
   std::string uptime;
@@ -104,9 +104,8 @@ long LinuxParser::UpTime() {
 }
 
 // TODO: Read and return the number of jiffies for the system
+// TODO: Use System Active jiffies + System IdleJiffies which take values from CpuUtilization
 long LinuxParser::Jiffies() {
-  // TODO: Could use CpuUtilization here
-  // TODO: Try System Active jiffies + System IdleJiffies
   return LinuxParser::UpTime() * sysconf(_SC_CLK_TCK);
 }
 
@@ -273,4 +272,59 @@ long LinuxParser::UpTime(int pid) {
     return std::stol(utime)/sysconf(_SC_CLK_TCK);
   }
   return 0;
+}
+
+float LinuxParser::ProcessUtilization(int pid){
+
+  static float prevUserTime = 0;
+  static float prevKernelTime = 0;
+  static float prevWfcUserTime = 0;
+  static float prevWfcKernelTime = 0;
+  static float prevStartTime = 0;
+
+  float userTime;
+  float kernelTime;
+  float wfcUserTime;
+  float wfcKernelTime;
+  float startTime;
+	
+  float totalTime;
+	
+  float elapsedTime;
+	
+  string line, key,  value;
+  std::ifstream filestream(kProcDirectory + '/' + to_string(pid) + kStatFilename);
+	
+  if(filestream.is_open()) 
+  {
+    while(std::getline(filestream, line)) 
+    {	
+      std::istringstream linestream(line);
+			
+      for (int i = 0; i < 25; i++)
+      {
+        linestream >> value;
+        if(i == 13)
+          userTime = stof(value);
+        else if (i == 14)
+          kernelTime = stof(value);
+        else if (i == 15)
+          wfcUserTime = stof(value);
+        else if (i == 16)
+	  wfcKernelTime = stof(value);
+        else if (i == 21)
+          startTime = stof(value);
+       }
+    }
+    
+    totalTime = ((userTime - prevUserTime) + (kernelTime - prevKernelTime) + (wfcUserTime - prevWfcUserTime) + (wfcKernelTime - prevWfcKernelTime))/sysconf(_SC_CLK_TCK);
+    elapsedTime = LinuxParser::UpTime() - ((startTime - prevStartTime) / sysconf(_SC_CLK_TCK));  
+    
+    prevUserTime = userTime;
+    prevKernelTime = kernelTime;
+    prevWfcUserTime = wfcUserTime;
+    prevWfcKernelTime = wfcKernelTime;
+    prevStartTime = startTime;
+  }
+  return (totalTime / elapsedTime);
 }

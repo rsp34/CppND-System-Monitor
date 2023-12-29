@@ -4,9 +4,10 @@
 
 #include "processor.h"
 
-// TODO: Return the aggregate CPU utilization
+// DONE: Return the aggregate CPU utilization
+// TODO: Could use static here and base of the last call.
 float Processor::Utilization() { 
-     // Based on: https://stackoverflow.com/questions/23367857/accurate-calculation-of-cpu-usage-given-in-percentage-in-linux
+  // Based on: https://stackoverflow.com/questions/23367857/accurate-calculation-of-cpu-usage-given-in-percentage-in-linux
 
   long prev_idle = LinuxParser::IdleJiffies();
   long prev_active = LinuxParser::ActiveJiffies();
