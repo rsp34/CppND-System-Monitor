@@ -15,7 +15,8 @@ using std::vector;
 int Process::Pid() { return pid_; }
 
 // TODO: Return this process's CPU utilization
-float Process::CpuUtilization() { return 0; }
+//Solution https://knowledge.udacity.com/questions/834579
+float Process::CpuUtilization() const { return 0; }
 
 // TODO: Return the command that generated this process
 string Process::Command() { return LinuxParser::Command(Process::Pid()); }
@@ -24,11 +25,16 @@ string Process::Command() { return LinuxParser::Command(Process::Pid()); }
 string Process::Ram() { return LinuxParser::Ram(Process::Pid()); }
 
 // TODO: Return the user (name) that generated this process
-string Process::User() { return LinuxParser::User(Process::Pid); }
+string Process::User() { return LinuxParser::User(Process::Pid()); }
 
 // TODO: Return the age of this process (in seconds)
 long int Process::UpTime() { return LinuxParser::UpTime(Process::Pid()); }
 
 // TODO: Overload the "less than" comparison operator for Process objects
 // REMOVE: [[maybe_unused]] once you define the function
-bool Process::operator<(Process const& a[[maybe_unused]]) const { return true; }
+// Rank by CPU utilisation
+bool Process::operator<(Process const& a) const {
+    if(Process::CpuUtilization() < a.CpuUtilization()){
+        return true;
+    }
+    return false;
