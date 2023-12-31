@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <sstream>
 #include <string>
+#include <map>
 #include <vector>
 
 #include "linux_parser.h"
@@ -289,21 +290,22 @@ long LinuxParser::UpTime(int pid_) {
 
 float LinuxParser::ProcessUtilization(int pid) {
 
-  //Doesn't work as prevUserTime is shared across processes.
-  static float prevUserTime = 0;
-  static float prevKernelTime = 0;
-  static float prevWfcUserTime = 0;
-  static float prevWfcKernelTime = 0;
+  static std::map<int, float> prevTotalTime;
+
+  if (prevTotalTime.find(pid) == prevTotalTime.end()){
+    prevTotalTime[pid] = 0;
+  }
 
   float userTime;
   float kernelTime;
   float wfcUserTime;
   float wfcKernelTime;
-  float startTime;
 
   float totalTime;
 
-  float elapsedTime = 1.0; // Set as display refresh rate
+  float elapsedTime = 1.0; // Set as display refresh rate for now
+
+  float fraction;
 
   string line, key, value;
   std::ifstream filestream(kProcDirectory + '/' + to_string(pid) +
@@ -313,7 +315,7 @@ float LinuxParser::ProcessUtilization(int pid) {
     while (std::getline(filestream, line)) {
       std::istringstream linestream(line);
 
-      for (int i = 0; i < 25; i++) {
+      for (int i = 0; i < 17; i++) {
         linestream >> value;
         if (i == 13)
           userTime = stof(value);
@@ -323,20 +325,15 @@ float LinuxParser::ProcessUtilization(int pid) {
           wfcUserTime = stof(value);
         else if (i == 16)
           wfcKernelTime = stof(value);
-        else if (i == 21)
-          startTime = stof(value);
       }
     }
 
-    totalTime = ((userTime - prevUserTime) + (kernelTime - prevKernelTime) +
-                 (wfcUserTime - prevWfcUserTime) +
-                 (wfcKernelTime - prevWfcKernelTime)) /
+    totalTime = (userTime + kernelTime + wfcUserTime + wfcKernelTime) /
                 sysconf(_SC_CLK_TCK);
 
-    prevUserTime = userTime;
-    prevKernelTime = kernelTime;
-    prevWfcUserTime = wfcUserTime;
-    prevWfcKernelTime = wfcKernelTime;
+    fraction = (totalTime - prevTotalTime[pid]) / elapsedTime;
+
+    prevTotalTime[pid] = totalTime;
   }
-  return (totalTime / elapsedTime);
+  return fraction;
 }
